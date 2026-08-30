@@ -1,0 +1,1 @@
+atualize o arquivo de progresso com suas considerações o que foi feito etc, marcando com checklist e tirando dos próximos passos, *importante*, não escreva nada fora do escopo do documento de PROGRESSO.md

@@ -15,8 +15,11 @@
 - ✅ `prisma migrate dev` executado — migration inicial versionada em `prisma/migrations/`
 - ✅ `prisma generate` executado
 - ✅ App sobe sem erros (`Nest application successfully started`)
+- ✅ **PrismaModule / PrismaService**: Configuração global injetando PrismaClient.
+- ✅ **ConfigModule**: Validação fail-fast via Joi (`DATABASE_URL`, `REDIS_HOST`, etc.).
+- ✅ **ValidationPipe**: Global em `main.ts` com proteção rigorosa para payloads inesperados.
 
-**Ainda não iniciado:** nenhum módulo de negócio (`Documents`, `Processing`, `Ai`, `Review`).
+**Ainda não iniciado:** módulos de negócio (`Documents`, `Processing`, `Ai`, `Review`).
 
 ---
 
@@ -42,9 +45,9 @@
 
 ## 4. Próximos passos imediatos (nesta ordem)
 
-1. **`PrismaModule` / `PrismaService`** — provider único injetável, nenhum outro módulo deve instanciar `PrismaClient` diretamente.
-2. **`ConfigModule`** com validação de schema (Joi/Zod) — app não sobe sem `DATABASE_URL`/`REDIS_HOST`/`REDIS_PORT`.
-3. **`ValidationPipe` global** no `main.ts` (`whitelist: true, forbidNonWhitelisted: true`).
+1. ✅ **`PrismaModule` / `PrismaService`** — provider único injetável, nenhum outro módulo deve instanciar `PrismaClient` diretamente.
+2. ✅ **`ConfigModule`** com validação de schema (Joi/Zod) — app não sobe sem `DATABASE_URL`/`REDIS_HOST`/`REDIS_PORT`.
+3. ✅ **`ValidationPipe` global** no `main.ts` (`whitelist: true, forbidNonWhitelisted: true`).
 4. **`DocumentsModule`** — prioridade 1 do plano de implementação:
    - `POST /documents` com validação de tipo/tamanho
    - cálculo de hash (SHA-256) e checagem de duplicata **antes** de qualquer persistência/enfileiramento
