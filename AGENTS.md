@@ -26,7 +26,6 @@ Se alguma instrução deste arquivo conflitar com um dos quatro acima, **os quat
 - **Nunca invente decisão de arquitetura nova.** Se `ARCHITECTURE.md` não cobre algo necessário (ex.: um detalhe de validação), pare e pergunte, em vez de decidir sozinho.
 - **Não gere dados reais.** Toda massa de teste/seed deve ser fictícia — nomes, CPFs e documentos inventados, nunca reais (exigência explícita do edital).
 - **Não logue nem exponha em código dados sensíveis** de exemplo de forma que pareça real — mantenha claramente fictício (ex. `000.000.000-00`, nomes óbvios de teste).
-
 ---
 
 ## 4. Commits — como o agente deve committar
@@ -38,6 +37,7 @@ Se alguma instrução deste arquivo conflitar com um dos quatro acima, **os quat
 - Corpo do commit (quando a mudança não for óbvia): explicar o **porquê**, não só o "o quê" — ex.: `fix(review): return 409 on duplicate claim` com corpo `Prevents two reviewers from correcting the same document concurrently (Fato g).`
 - **Nunca** commit único "initial" ou "final version". O histórico precisa contar a ordem real do trabalho — é item explicitamente avaliado.
 - Antes de cada commit, o agente deve me mostrar a mensagem proposta para eu confirmar ou ajustar.
+- Todas as mensagens de commit devem ser escritas em **português**.
 
 ---
 
