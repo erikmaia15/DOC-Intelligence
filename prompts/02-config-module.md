@@ -1,0 +1,4 @@
+lembre-se de antes de fazer me explicar como vai ser feito e os passo que vai seguir no plano, agora Cria um ConfigModule global usando @nestjs/config, com validação de schema via Joi, garantindo que a aplicação não suba sem as variáveis DATABASE_URL, REDIS_HOST, REDIS_PORT e PORT definidas. O arquivo de validação deve ficar em src/config/env.validation.ts, e o módulo em src/config/config.module.ts. Registre no AppModule. Antes de codar, me explica rapidamente por que validar o schema no bootstrap é melhor do que deixar o erro estourar só quando o Prisma tentar conectar.
+
+
+Testado fail-fast do ConfigModule comentando REDIS_PORT propositalmente — aplicação recusou subir com erro claro do Joi (`"REDIS_PORT" is required"), confirmando que a validação funciona como especificado.
