@@ -1,0 +1,59 @@
+// Schema Prisma — DOC Intelligence
+// Modelo de dados conforme docs/ARCHITECTURE.md, seção 3.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum DocumentStatus {
+  PENDING
+  PROCESSING
+  READY
+  NEEDS_REVIEW
+  FAILED
+}
+
+model Document {
+  id               String         @id @default(uuid())
+  originalFilename String
+  storageKey       String
+  mimeType         String
+  sizeBytes        Int
+  contentHash      String         @unique
+  status           DocumentStatus @default(PENDING)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  extractionResult ExtractionResult?
+  reviewClaim      ReviewClaim?
+
+  @@index([status])
+}
+
+model ExtractionResult {
+  id                String   @id @default(uuid())
+  documentId        String   @unique
+  document          Document @relation(fields: [documentId], references: [id])
+  documentType      String
+  extractedFields   Json
+  suggestedFilename String
+  confidenceScore   Float
+  createdAt         DateTime @default(now())
+}
+
+model ReviewClaim {
+  id              String    @id @default(uuid())
+  documentId      String    @unique
+  document        Document  @relation(fields: [documentId], references: [id])
+  lockedBy        String
+  lockedAt        DateTime
+  expiresAt       DateTime
+  correctedFields Json?
+  reviewedBy      String?
+  reviewedAt      DateTime?
+}
