@@ -66,6 +66,14 @@ Com a aplicação rodando, acesse o contrato interativo da API (Swagger UI) em:
 👉 **[http://localhost:3000/api-docs](http://localhost:3000/api-docs)**
 
 ---
+## 📄 Documentação do Projeto
+- `docs/ARCHITECTURE.md` — decisões de arquitetura e ADRs
+- `docs/FEATURES.md` — escopo da fatia vertical (o que entra/fica fora)
+- `docs/NESTJS-BEST-PRACTICES.md` — convenções de código
+- `docs/DIVERGENCIAS.md` — divergências entre especificação e implementação
+- `AGENTS.md` — instruções usadas para condução do agente de IA
+- `prompts/` — prompts utilizados, em ordem cronológica
+- `PROGRESSO.md` — log de testes manuais e decisões da sessão
 
 ## 🧪 Sobre os Testes (Decisões de Cobertura)
 
