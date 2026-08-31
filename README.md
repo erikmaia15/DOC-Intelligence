@@ -14,13 +14,13 @@ Certifique-se de ter os seguintes itens instalados na sua máquina:
 Siga o passo a passo abaixo para levantar a infraestrutura e a aplicação:
 
 **1. Clone o repositório e acesse a pasta**
-\`\`\`bash
+\`\`\`
 git clone https://github.com/erikmaia15/DOC-Intelligence.git
-cd doc-Intelligence
+, cd doc-Intelligence
 \`\`\`
 
 **2. Instale as dependências**
-\`\`\`bash
+\`\`\`
 npm install
 \`\`\`
 
@@ -43,21 +43,21 @@ NODE_ENV=development
 \`\`\`
 
 **4. Suba a infraestrutura (PostgreSQL e Redis)**
-\`\`\`bash
-cd db
-docker compose up -d
-cd ..
+\`\`\`
+cd db, 
+docker compose up -d,
+ cd ..
 \`\`\`
 
 **5. Sincronize o Banco de Dados (Prisma)**
 Como o banco de dados acabou de ser criado pelo Docker, gere a estrutura das tabelas:
-\`\`\`bash
-npx prisma migrate dev
-Esse comando respeita o versionamento do prisma!
 \`\`\`
+npx prisma migrate dev
+\`\`\`
+Esse comando respeita o versionamento do prisma!
 
 **6. Inicie a aplicação**
-\`\`\`bash
+\`\`\`
 npm run start:dev
 \`\`\`
 
@@ -70,7 +70,7 @@ Com a aplicação rodando, acesse o contrato interativo da API (Swagger UI) em:
 ## 🧪 Sobre os Testes (Decisões de Cobertura)
 
 Para rodar os testes, execute:
-\`\`\`bash
+\`\`\`
 npm run test
 \`\`\`
 
