@@ -157,4 +157,36 @@ describe('ProcessingConsumer', () => {
       expect(prisma.extractionResult.create).not.toHaveBeenCalled();
     });
   });
+
+  describe('onFailed (tratamento de falha do BullMQ)', () => {
+    it('NÃO deve atualizar para FAILED se ainda houver tentativas (falha intermediária)', async () => {
+      const mockJob = {
+        data: { documentId: 'doc-999' },
+        attemptsMade: 1, // Falhou na primeira de três
+        opts: { attempts: 3 },
+      } as unknown as Job;
+
+      await consumer.onFailed(mockJob, new Error('Erro na rede temporário'));
+
+      // O status no banco não deve ser tocado, pois o BullMQ vai realizar o retry em breve
+      expect(prisma.document.update).not.toHaveBeenCalled();
+    });
+
+    it('DEVE atualizar status para FAILED quando as tentativas se esgotarem (falha final)', async () => {
+      const mockJob = {
+        data: { documentId: 'doc-999' },
+        attemptsMade: 3, // Falhou na última tentativa disponível
+        opts: { attempts: 3 },
+      } as unknown as Job;
+
+      await consumer.onFailed(mockJob, new Error('IA fora do ar permanentemente'));
+
+      // Como o limite estourou, o documento deve receber a flag final de FAILED no banco
+      expect(prisma.document.update).toHaveBeenCalledTimes(1);
+      expect(prisma.document.update).toHaveBeenCalledWith({
+        where: { id: 'doc-999' },
+        data: { status: DocumentStatus.FAILED },
+      });
+    });
+  });
 });
