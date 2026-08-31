@@ -1,0 +1,3 @@
+test(review): valida concorrência na reivindicação de revisão (Fato g)
+
+Implementa testes unitários para o ReviewService cobrindo o mecanismo de trava otimista com TTL. Garante que (1) claims inéditos são aceitos, (2) tentativas de assumir claims alheios ativos estouram 409 Conflict, (3) o próprio revisor pode renovar seu claim sem erro, e (4) claims expirados são ignorados e sobrescritos com sucesso.
