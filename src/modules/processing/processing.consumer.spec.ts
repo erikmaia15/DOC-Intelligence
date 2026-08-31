@@ -88,6 +88,17 @@ describe('ProcessingConsumer', () => {
         data: { status: DocumentStatus.PROCESSING },
       });
 
+      // Garante que o resultado da extração foi de fato salvo no banco
+      expect(prisma.extractionResult.create).toHaveBeenCalledWith({
+        data: {
+          documentId: 'doc-123',
+          documentType: 'RG',
+          extractedFields: { nome: 'Teste' },
+          suggestedFilename: 'teste_rg',
+          confidenceScore: 0.95,
+        },
+      });
+
       expect(prisma.document.update).toHaveBeenLastCalledWith({
         where: { id: 'doc-123' },
         data: { status: DocumentStatus.READY },
@@ -111,10 +122,39 @@ describe('ProcessingConsumer', () => {
         data: { status: DocumentStatus.PROCESSING },
       });
 
+      // Garante que o resultado da extração também é salvo mesmo com baixa confiança
+      expect(prisma.extractionResult.create).toHaveBeenCalledWith({
+        data: {
+          documentId: 'doc-123',
+          documentType: 'RG',
+          extractedFields: { nome: 'Teste Ilegível' },
+          suggestedFilename: 'teste_rg',
+          confidenceScore: 0.75,
+        },
+      });
+
       expect(prisma.document.update).toHaveBeenLastCalledWith({
         where: { id: 'doc-123' },
         data: { status: DocumentStatus.NEEDS_REVIEW },
       });
+    });
+
+    it('deve atualizar para PROCESSING e propagar o erro (trigger do retry) se a IA falhar', async () => {
+      // Simula falha da IA (timeout, erro 500 etc)
+      const iaError = new Error('IA indisponível no momento');
+      aiPort.classifyAndExtract.mockRejectedValue(iaError);
+
+      // O process() DEVE lançar o erro para cima, para que o BullMQ capture e aplique o retry
+      await expect(consumer.process(mockJob)).rejects.toThrow('IA indisponível no momento');
+
+      // Mas o status ainda deve ter sido alterado para PROCESSING logo no início
+      expect(prisma.document.update).toHaveBeenCalledWith({
+        where: { id: 'doc-123' },
+        data: { status: DocumentStatus.PROCESSING },
+      });
+
+      // Como falhou antes, a extração nunca deve ser salva
+      expect(prisma.extractionResult.create).not.toHaveBeenCalled();
     });
   });
 });
