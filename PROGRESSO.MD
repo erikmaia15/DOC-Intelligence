@@ -20,7 +20,10 @@
 - ✅ **ValidationPipe**: Global em `main.ts` com proteção rigorosa para payloads inesperados.
 - ✅ **DocumentsModule**: Upload de arquivos validando mimeType e maxSizeBytes, deduplicação garantida por hash (Fato C), persistência usando o nome do arquivo original (resolvendo problemas de codificação latin1) e retorno via controller limpo e focado.
 
-**Ainda não iniciado:** módulos de negócio (`Processing`, `Ai`, `Review`).
+- ✅ **AiModule**: Interface `AiPort` e `StubAiAdapter` implementados para desacoplar provedor de IA (Fato f).
+- ✅ **ProcessingModule**: Fila assíncrona (BullMQ) para processamento em background (Fato a), com retry backoff exponencial e roteamento inteligente por confiabilidade.
+
+**Ainda não iniciado:** módulos de negócio (`Review`).
 
 ---
 
@@ -55,15 +58,23 @@
 
 ---
 
+## Testes manuais realizados — ProcessingModule
+
+- Upload novo → PENDING → PROCESSING → READY (~2s), ExtractionResult populado ✅
+- STUB_AI_CONFIDENCE=0.5 → NEEDS_REVIEW confirmado ✅ (bug encontrado: valor do .env não era aplicado sem reiniciar o processo — corrigido/confirmado reiniciando o app)
+- Falha simulada → FAILED: não testado [ou testar rapidamente se sobrar tempo] ⚠️
+
+---
+
 ## 4. Próximos passos imediatos (nesta ordem)
 
 1. ✅ **`PrismaModule` / `PrismaService`** — provider único injetável, nenhum outro módulo deve instanciar `PrismaClient` diretamente.
 2. ✅ **`ConfigModule`** com validação de schema (Joi/Zod) — app não sobe sem `DATABASE_URL`/`REDIS_HOST`/`REDIS_PORT`.
 3. ✅ **`ValidationPipe` global** no `main.ts` (`whitelist: true, forbidNonWhitelisted: true`).
 4. ✅ **`DocumentsModule`** — concluído e testado.
-5. **`AiModule`** (`AiPort` + `StubAiAdapter`)
-6. **`ProcessingModule`** (BullMQ worker + retry/backoff)
-7. **`ReviewModule`** (claim + correct) — primeiro candidato a corte se o prazo apertar
+5. ✅ **`AiModule`** (`AiPort` + `StubAiAdapter`) — concluído.
+6. ✅ **`ProcessingModule`** (BullMQ worker + retry/backoff) — concluído e testado.
+7. **`ReviewModule`** (claim + correct) — primeiro candidato a corte se o prazo apertar, mas vamos implementar
 8. Testes dos 4 cenários de `docs/FEATURES.md` seção 4 — se sobrar tempo
 9. `README.md` do projeto, revisão de commits, prompts salvos, carta de fechamento
 
