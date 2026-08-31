@@ -21,6 +21,8 @@ Se alguma instrução deste arquivo conflitar com um dos quatro acima, **os quat
 
 ## 3. Regras de comportamento do agente
 
+- Todo módulo de negócio deve ser criado em `src/modules/<nome>/`, nunca direto em `src/`. Módulos de infraestrutura transversal (`prisma`, `config`) e utilitários globais (`common`) ficam fora de `modules/`, direto em `src/`.
+
 - **Uma tarefa por vez.** Não gere o projeto inteiro de uma vez. Espere confirmação entre módulos (ex.: termine `DocumentsModule`, pare, aguarde revisão, só então siga para `ProcessingModule`).
 - **Explique antes de codar.** Para qualquer tarefa não trivial, descreva em 3-5 linhas o que vai fazer e por quê, **antes** de gerar o código — isso é o que vira o "parágrafo sobre como o agente foi conduzido" exigido pela prova.
 - **Nunca invente decisão de arquitetura nova.** Se `ARCHITECTURE.md` não cobre algo necessário (ex.: um detalhe de validação), pare e pergunte, em vez de decidir sozinho.

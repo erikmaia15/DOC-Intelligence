@@ -6,18 +6,22 @@
 
 ## 1. Estrutura em camadas dentro de cada módulo
 
-Cada módulo (`documents`, `processing`, `ai`, `review`) segue a mesma forma interna:
+Todos os módulos de negócio vivem em `src/modules/<nome-do-modulo>/`, nunca direto em `src/`. Exemplo:
 
-```
-documents/
-  documents.module.ts
-  documents.controller.ts     -- HTTP: recebe request, valida DTO, chama service, retorna response
-  documents.service.ts        -- regra de negócio (dedupe, orquestração)
-  documents.repository.ts     -- acesso a dados via Prisma (isola o service do ORM)
-  dto/
-    upload-document.dto.ts
-    document-response.dto.ts
-```
+src/
+  modules/
+    documents/
+      documents.module.ts
+      documents.controller.ts
+      documents.service.ts
+      documents.repository.ts
+      dto/
+    processing/
+    ai/
+    review/
+  prisma/          -- infraestrutura transversal, fora de modules/
+  config/          -- infraestrutura transversal, fora de modules/
+  common/          -- filtros, pipes, interceptors globais
 
 **Regra:** `Controller` nunca acessa o Prisma diretamente. `Service` nunca conhece detalhes de HTTP (status codes, headers). Isso é o que permite trocar uma peça sem quebrar as outras — exatamente o critério de 30% da nota.
 
