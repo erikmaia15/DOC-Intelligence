@@ -5,9 +5,10 @@ import { PrismaModule } from './prisma/prisma.module.js';
 import { ConfigModule } from './config/config.module.js';
 import { DocumentsModule } from './modules/documents/documents.module.js';
 import { AiModule } from './modules/ai/ai.module.js';
+import { ProcessingModule } from './modules/processing/processing.module.js';
 
 @Module({
-  imports: [ConfigModule, PrismaModule, DocumentsModule, AiModule],
+  imports: [ConfigModule, PrismaModule, DocumentsModule, AiModule, ProcessingModule],
   controllers: [AppController],
   providers: [AppService],
 })

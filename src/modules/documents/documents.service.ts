@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { DocumentsRepository } from './documents.repository.js';
+import { ProcessingProducer } from '../processing/processing.producer.js';
 import 'multer';
 import * as crypto from 'crypto';
 import * as fs from 'fs/promises';
@@ -12,7 +13,10 @@ export class DocumentsService {
   private readonly maxSizeBytes = 10 * 1024 * 1024; // 10MB
   private readonly storageDir = path.join(process.cwd(), 'storage');
 
-  constructor(private readonly repository: DocumentsRepository) {}
+  constructor(
+    private readonly repository: DocumentsRepository,
+    private readonly processingProducer: ProcessingProducer,
+  ) {}
 
   async uploadAndCreate(file: Express.Multer.File) {
     if (!file) {
@@ -51,6 +55,9 @@ export class DocumentsService {
       contentHash: hash,
       status: DocumentStatus.PENDING,
     });
+
+    // Enfileira na fila do BullMQ
+    await this.processingProducer.enqueue(document.id);
 
     return document;
   }
