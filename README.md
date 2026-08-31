@@ -52,7 +52,8 @@ cd ..
 **5. Sincronize o Banco de Dados (Prisma)**
 Como o banco de dados acabou de ser criado pelo Docker, gere a estrutura das tabelas:
 \`\`\`bash
-npx prisma db push
+npx prisma migrate dev
+Esse comando respeita o versionamento do prisma!
 \`\`\`
 
 **6. Inicie a aplicação**
