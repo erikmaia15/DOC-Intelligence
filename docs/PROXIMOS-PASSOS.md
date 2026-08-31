@@ -54,8 +54,3 @@ Responder, em até 2 páginas, PDF, Roboto 11, espaçamento 1,15, parágrafos 6p
 - [ ] Enviar por e-mail: link do repo + carta de fechamento em PDF
 
 ---
-
-## Perguntas que você pode mandar para o avaliador (contam a favor)
-- Exemplos de tipos de documento além de identidade, para validar o modelo de campos extraídos?
-- Há SLA esperado para a fila de conferência?
-- Ambiente de destino (nuvem específica) já definido, ou é livre escolha total?
