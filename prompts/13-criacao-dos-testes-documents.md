@@ -1,0 +1,5 @@
+Antes de codar, leia docs/NESTJS-BEST-PRACTICES.md seção 8 (testes unitários com Prisma e AiPort mockados) e docs/FEATURES.md seção 4, item 1.
+
+Cria documents.service.spec.ts em src/modules/documents/, usando @nestjs/testing e Jest. Mocke PrismaService (jest.fn() para os métodos usados, ex. document.findUnique, document.create). Cenário a cobrir: ao chamar o método de criação do DocumentsService duas vezes com o mesmo contentHash (simulando o mesmo arquivo), a segunda chamada deve: (a) não chamar prisma.document.create novamente, (b) retornar o documento já existente (mock do findUnique retornando um resultado). Cubra também o caso de sucesso simples: hash inédito → create é chamado uma vez.
+
+Antes de gerar o código, me explique brevemente a estratégia de mock que vai usar para o PrismaService (mock manual vs. jest.mock automático).
