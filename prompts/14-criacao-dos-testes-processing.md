@@ -1,0 +1,3 @@
+Antes de codar, leia docs/FEATURES.md seção 4, item 2, e o ProcessingConsumer já implementado.
+
+Cria processing.consumer.spec.ts em src/modules/processing/, seguindo o mesmo padrão de mock manual usado em documents.service.spec.ts (Prisma mockado via useValue, AI_PORT mockado via token). Cenários: (1) quando AiPort.classifyAndExtract retorna confidenceScore >= 0.8, o Document.status deve ser atualizado para READY; (2) quando retorna < 0.8, deve ser atualizado para NEEDS_REVIEW. Verifique que prisma.document.update foi chamado com o status correto em cada caso.
