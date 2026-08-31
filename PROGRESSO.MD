@@ -22,8 +22,9 @@
 
 - ✅ **AiModule**: Interface `AiPort` e `StubAiAdapter` implementados para desacoplar provedor de IA (Fato f).
 - ✅ **ProcessingModule**: Fila assíncrona (BullMQ) para processamento em background (Fato a), com retry backoff exponencial e roteamento inteligente por confiabilidade.
+- ✅ **ReviewModule**: Fila de conferência manual (Fato g) com trava por TTL (claim) e tratamento de concorrência usando exceções semânticas.
 
-**Ainda não iniciado:** módulos de negócio (`Review`).
+**Ainda não iniciado:** testes automatizados, limpeza de commits, e arquivo final `README.md`.
 
 ---
 
@@ -74,7 +75,7 @@
 4. ✅ **`DocumentsModule`** — concluído e testado.
 5. ✅ **`AiModule`** (`AiPort` + `StubAiAdapter`) — concluído.
 6. ✅ **`ProcessingModule`** (BullMQ worker + retry/backoff) — concluído e testado.
-7. **`ReviewModule`** (claim + correct) — primeiro candidato a corte se o prazo apertar, mas vamos implementar
+7. ✅ **`ReviewModule`** (claim + correct) — concluído.
 8. Testes dos 4 cenários de `docs/FEATURES.md` seção 4 — se sobrar tempo
 9. `README.md` do projeto, revisão de commits, prompts salvos, carta de fechamento
 
