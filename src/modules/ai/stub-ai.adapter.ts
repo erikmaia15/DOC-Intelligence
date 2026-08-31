@@ -6,13 +6,19 @@ import { AiPort, AiExtractionResult } from './ai.port.js';
 export class StubAiAdapter implements AiPort {
   constructor(private configService: ConfigService) {}
 
-  async classifyAndExtract(fileBuffer: Buffer, mimeType: string): Promise<AiExtractionResult> {
+  async classifyAndExtract(
+    _fileBuffer: Buffer,
+    _mimeType: string,
+  ): Promise<AiExtractionResult> {
     // Simula a latência da IA (Fato a)
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // STUB_AI_CONFIDENCE permite injetar o fluxo de baixa confiança para teste local
-    const confidenceScoreStr = this.configService.get<string>('STUB_AI_CONFIDENCE');
-    const confidenceScore = confidenceScoreStr ? parseFloat(confidenceScoreStr) : 0.95;
+    const confidenceScoreStr =
+      this.configService.get<string>('STUB_AI_CONFIDENCE');
+    const confidenceScore = confidenceScoreStr
+      ? parseFloat(confidenceScoreStr)
+      : 0.95;
 
     return {
       documentType: 'RG',
@@ -21,7 +27,7 @@ export class StubAiAdapter implements AiPort {
         filiacao: ['José Silva', 'Maria Silva'],
         dataNascimento: '1990-01-01',
         numero: '12.345.678-9',
-        orgaoEmissor: 'SSP/SP'
+        orgaoEmissor: 'SSP/SP',
       },
       suggestedFilename: 'joao_silva_rg',
       confidenceScore: confidenceScore,
