@@ -23,8 +23,10 @@
 - ✅ **AiModule**: Interface `AiPort` e `StubAiAdapter` implementados para desacoplar provedor de IA (Fato f).
 - ✅ **ProcessingModule**: Fila assíncrona (BullMQ) para processamento em background (Fato a), com retry backoff exponencial e roteamento inteligente por confiabilidade.
 - ✅ **ReviewModule**: Fila de conferência manual (Fato g) com trava por TTL (claim) e tratamento de concorrência usando exceções semânticas.
+- ✅ **Testes Automatizados**: Suítes criadas usando Vitest, com PrismaService mockado limpo, validando concorrência (claim), retentativas/falha (worker) e deduplicação (Fato c).
+- ✅ **Documentação da API (Swagger)**: Contrato OpenAPI configurado no `main.ts` e decorators adicionados em Controllers e DTOs, acessível em `/api-docs`.
 
-**Ainda não iniciado:** testes automatizados, limpeza de commits, e arquivo final `README.md`.
+**Ainda não iniciado:** arquivo final `README.md` (com instruções de deploy local) e consolidação/revisão dos commits e arquivos de prompt.
 
 ---
 
@@ -40,15 +42,16 @@
 
 | Decisão | Escolha | Motivo |
 |---|---|---|
-| Sistema de módulos do Nest | **CommonJS (CJS) + Jest** | Mais maduro/estável no ecossistema Nest do que ESM+Vitest; time não deve ser gasto debugando configuração de módulo. |
-| Localização da documentação | `docs/ARCHITECTURE.md`, `docs/FEATURES.md`, `docs/NESTJS-BEST-PRACTICES.md`, `docs/PROXIMOS-PASSOS.md` | `AGENTS.md` fica na **raiz** (convenção de ferramentas de agente); os demais em `docs/` para não poluir a raiz. |
+| Sistema de módulos do Nest | **ESM + Vitest** (Corrigido) | A aplicação estava usando Vite/Vitest por baixo dos panos na compilação e teste (`npm test` chamava Vitest). Os testes foram escritos com `vi.mock` e `vi.spyOn` adequados ao ESM em vez de Jest. |
+| Estratégia de Mocks | `Test.createTestingModule` com `useValue` | Abordagem mais recomendada pelo ecossistema NestJS, injetando funções do Vitest/Jest mockadas (ex: `{ document: { findUnique: vi.fn() } }`) diretamente sobre o repositório em vez de mockar módulos isolados que falham no build. |
+| Falha no BullMQ | Exceções **devem estourar** | Foi decidido explicitamente **não** silenciar erros no `try/catch` do consumer. O erro é propagado para o BullMQ de forma que ele enfileire o retry e incremente o contador `attemptsMade`. |
 | Localização do docker-compose | `db/docker-compose.yml` (não na raiz) | Organização escolhida pelo candidato; comando de subida ajustado para `docker compose -f db/docker-compose.yml up -d`. |
 
 > ⚠️ Se o `AGENTS.md` ainda referencia os arquivos de docs sem o prefixo `docs/`, corrigir os caminhos nas seções 2 e 6 dele antes de seguir — o agente precisa achar os arquivos certos.
 
 ---
 
-## Testes manuais realizados — DocumentsModule
+## Testes manuais realizados
 
 - Upload válido → 201, Document criado com status PENDING ✅
 - Reenvio do mesmo arquivo → inicialmente criava duplicata (bug: dedupe checava só na resposta, não antes de persistir) → corrigido, agora retorna o mesmo id ✅
@@ -56,28 +59,32 @@
 - Encoding de nome de arquivo com acento → estava quebrado (latin1 vs utf-8), corrigido ✅
 - storageKey expondo caminho absoluto da máquina local → corrigido para caminho relativo ✅
 - GET /documents e GET /documents/:id → funcionando ✅
+- Processamento IA simulada (alta confiança 0.95) → PENDING → PROCESSING → READY (~2s) ✅
+- Processamento IA simulada (baixa confiança 0.5) → PROCESSING → NEEDS_REVIEW ✅
+- Swagger UI → acessível em `/api-docs` sem estourar compilação ✅
 
 ---
 
-## Testes manuais realizados — ProcessingModule
+## Testes automatizados realizados (Vitest)
 
-- Upload novo → PENDING → PROCESSING → READY (~2s), ExtractionResult populado ✅
-- STUB_AI_CONFIDENCE=0.5 → NEEDS_REVIEW confirmado ✅ (bug encontrado: valor do .env não era aplicado sem reiniciar o processo — corrigido/confirmado reiniciando o app)
-- Falha simulada → FAILED: não testado [ou testar rapidamente se sobrar tempo] ⚠️
+- **`documents.service.spec.ts`**: Valida a deduplicação rigorosa baseada no `contentHash` (Fato c). Confirma que requisições duplicadas recuperam o BD mas pulam completamente a regravação (`.create` not called) e IA. ✅
+- **`processing.consumer.spec.ts`**: Valida que a confiança da IA rege o fluxo final de `READY` vs `NEEDS_REVIEW`. Valida a resiliência (Fato a), confirmando que enquanto há tentativas o arquivo permanece `PROCESSING`, e só quando `attemptsMade >= opts.attempts` ele ganha a flag final de `FAILED`. ✅
+- **`review.service.spec.ts`**: Valida concorrência da fila de conferência (Fato g), usando mocks do Prisma para provar que a API rejeita `409 Conflict` se tentar roubar a trava ativa de outrem, mas permite a renovação de sua própria trava. ✅
 
 ---
 
 ## 4. Próximos passos imediatos (nesta ordem)
 
-1. ✅ **`PrismaModule` / `PrismaService`** — provider único injetável, nenhum outro módulo deve instanciar `PrismaClient` diretamente.
-2. ✅ **`ConfigModule`** com validação de schema (Joi/Zod) — app não sobe sem `DATABASE_URL`/`REDIS_HOST`/`REDIS_PORT`.
-3. ✅ **`ValidationPipe` global** no `main.ts` (`whitelist: true, forbidNonWhitelisted: true`).
+1. ✅ **`PrismaModule` / `PrismaService`** — concluído.
+2. ✅ **`ConfigModule`** com validação de schema (Joi/Zod) — concluído.
+3. ✅ **`ValidationPipe` global** no `main.ts` — concluído.
 4. ✅ **`DocumentsModule`** — concluído e testado.
 5. ✅ **`AiModule`** (`AiPort` + `StubAiAdapter`) — concluído.
 6. ✅ **`ProcessingModule`** (BullMQ worker + retry/backoff) — concluído e testado.
-7. ✅ **`ReviewModule`** (claim + correct) — concluído.
-8. Testes dos 4 cenários de `docs/FEATURES.md` seção 4 — se sobrar tempo
-9. `README.md` do projeto, revisão de commits, prompts salvos, carta de fechamento
+7. ✅ **`ReviewModule`** (claim + correct) — concluído e testado.
+8. ✅ Testes dos 4 cenários de `docs/FEATURES.md` seção 4 — concluídos 100%.
+9. ✅ Documentação Swagger OpenAPI na fatia vertical — concluída.
+10. **`README.md` do projeto, revisão de commits, prompts salvos, carta de fechamento.**
 
 ---
 
