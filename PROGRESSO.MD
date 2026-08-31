@@ -18,8 +18,9 @@
 - ✅ **PrismaModule / PrismaService**: Configuração global injetando PrismaClient.
 - ✅ **ConfigModule**: Validação fail-fast via Joi (`DATABASE_URL`, `REDIS_HOST`, etc.).
 - ✅ **ValidationPipe**: Global em `main.ts` com proteção rigorosa para payloads inesperados.
+- ✅ **DocumentsModule**: Upload de arquivos validando mimeType e maxSizeBytes, deduplicação garantida por hash (Fato C), persistência usando o nome do arquivo original (resolvendo problemas de codificação latin1) e retorno via controller limpo e focado.
 
-**Ainda não iniciado:** módulos de negócio (`Documents`, `Processing`, `Ai`, `Review`).
+**Ainda não iniciado:** módulos de negócio (`Processing`, `Ai`, `Review`).
 
 ---
 
@@ -43,15 +44,23 @@
 
 ---
 
+## Testes manuais realizados — DocumentsModule
+
+- Upload válido → 201, Document criado com status PENDING ✅
+- Reenvio do mesmo arquivo → inicialmente criava duplicata (bug: dedupe checava só na resposta, não antes de persistir) → corrigido, agora retorna o mesmo id ✅
+- Upload de tipo inválido → 400 com corpo consistente (bug anterior: 201 com corpo de erro 400, corrigido) ✅
+- Encoding de nome de arquivo com acento → estava quebrado (latin1 vs utf-8), corrigido ✅
+- storageKey expondo caminho absoluto da máquina local → corrigido para caminho relativo ✅
+- GET /documents e GET /documents/:id → funcionando ✅
+
+---
+
 ## 4. Próximos passos imediatos (nesta ordem)
 
 1. ✅ **`PrismaModule` / `PrismaService`** — provider único injetável, nenhum outro módulo deve instanciar `PrismaClient` diretamente.
 2. ✅ **`ConfigModule`** com validação de schema (Joi/Zod) — app não sobe sem `DATABASE_URL`/`REDIS_HOST`/`REDIS_PORT`.
 3. ✅ **`ValidationPipe` global** no `main.ts` (`whitelist: true, forbidNonWhitelisted: true`).
-4. **`DocumentsModule`** — prioridade 1 do plano de implementação:
-   - `POST /documents` com validação de tipo/tamanho
-   - cálculo de hash (SHA-256) e checagem de duplicata **antes** de qualquer persistência/enfileiramento
-   - `GET /documents` e `GET /documents/:id`
+4. ✅ **`DocumentsModule`** — concluído e testado.
 5. **`AiModule`** (`AiPort` + `StubAiAdapter`)
 6. **`ProcessingModule`** (BullMQ worker + retry/backoff)
 7. **`ReviewModule`** (claim + correct) — primeiro candidato a corte se o prazo apertar
