@@ -1,0 +1,1 @@
+O originalFilename está vindo com encoding quebrado para nomes de arquivo com acentos (ex.: "área de trabalho.jpg" virou "Ã¡rea de trabalho.jpg"). Corrija a configuração do FileInterceptor/Multer no DocumentsController para decodificar file.originalname corretamente de latin1 para utf-8 antes de persistir.

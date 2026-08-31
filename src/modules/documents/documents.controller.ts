@@ -19,6 +19,9 @@ export class DocumentsController {
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
+    if (file && file.originalname) {
+      file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8');
+    }
     return this.documentsService.uploadAndCreate(file);
   }
 
