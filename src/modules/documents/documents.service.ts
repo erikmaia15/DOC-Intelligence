@@ -45,7 +45,7 @@ export class DocumentsService {
 
     const document = await this.repository.create({
       originalFilename: file.originalname,
-      storageKey: storagePath,
+      storageKey: filename,
       mimeType: file.mimetype,
       sizeBytes: file.size,
       contentHash: hash,
