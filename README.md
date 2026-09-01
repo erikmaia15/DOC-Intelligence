@@ -1,90 +1,120 @@
-# DOC Intelligence - API (Trilha A)
+# DOC Intelligence — API (Trilha A · Back-end)
 
-Fatia vertical da API do serviço de inteligência documental, desenvolvida com NestJS, Prisma, PostgreSQL e BullMQ (Fila com Redis) para processamento assíncrono. 
+Fatia vertical da API do serviço de inteligência documental do escritório Lamarck Advogados, desenvolvida com **NestJS**, **Prisma**, **PostgreSQL** e **BullMQ** (fila com Redis) para processamento assíncrono.
+
+Projeto desenvolvido como resposta à prova técnica de seleção — Trilha A (Back-end). A especificação completa e as decisões de arquitetura estão documentadas em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
+---
+
+## Sumário
+
+- [Pré-requisitos](#-pré-requisitos)
+- [Como rodar o projeto localmente](#-como-rodar-o-projeto-localmente)
+- [Documentação da API (Swagger)](#-documentação-da-api-swagger)
+- [Testes](#-testes)
+- [Documentação do projeto](#-documentação-do-projeto)
+
+---
 
 ## 🛠 Pré-requisitos
 
-Certifique-se de ter os seguintes itens instalados na sua máquina:
-* **Node.js** (versão 24.20.0 ou superior)
-* **Docker** e **Docker Compose**
-* **Git**
+- **Node.js** versão 24.20.0 ou superior
+- **Docker** e **Docker Compose**
+- **Git**
+
+---
 
 ## 🚀 Como rodar o projeto localmente
 
-Siga o passo a passo abaixo para levantar a infraestrutura e a aplicação:
-
-**1. Clone o repositório e acesse a pasta**
-\`\`\`
+### 1. Clone o repositório
+```bash
 git clone https://github.com/erikmaia15/DOC-Intelligence.git
-, cd doc-Intelligence
-\`\`\`
+cd doc-intelligence
+```
 
-**2. Instale as dependências**
-\`\`\`
+### 2. Instale as dependências
+```bash
 npm install
-\`\`\`
+```
 
-**3. Configure as Variáveis de Ambiente**
-Crie um arquivo chamado `.env` na raiz do projeto e insira as variáveis abaixo (preenchendo a senha do banco conforme configurado no Docker):
-\`\`\`env
-# URL DE CONEXAO DO BANCO
+### 3. Configure as variáveis de ambiente
+Crie um arquivo `.env` na raiz do projeto com o seguinte conteúdo:
+```env
+# URL de conexão do banco
 DATABASE_URL="postgresql://doc_intelligence:doc_intelligence@localhost:5433/doc_intelligence?schema=public"
 
 # Redis — usado pelo BullMQ
 REDIS_HOST="localhost"
 REDIS_PORT="6379"
 
-# Configuração da IA Mockada
+# Configuração da IA mockada (StubAiAdapter)
 STUB_AI_CONFIDENCE=0.95
 
-# Porta da aplicação NestJS
+# Aplicação
 PORT=3000
 NODE_ENV=development
-\`\`\`
+```
 
-**4. Suba a infraestrutura (PostgreSQL e Redis)**
-\`\`\`
-cd db, 
-docker compose up -d,
- cd ..
-\`\`\`
+### 4. Suba a infraestrutura (PostgreSQL e Redis)
+```bash
+cd db
+docker compose up -d
+cd ..
+```
 
-**5. Sincronize o Banco de Dados (Prisma)**
-Como o banco de dados acabou de ser criado pelo Docker, gere a estrutura das tabelas:
-\`\`\`
+### 5. Sincronize o banco de dados (Prisma)
+Aplica as migrations versionadas em `prisma/migrations/`:
+```bash
 npx prisma migrate dev
-\`\`\`
-Esse comando respeita o versionamento do prisma!
+```
 
-**6. Inicie a aplicação**
-\`\`\`
+### 6. Inicie a aplicação
+```bash
 npm run start:dev
-\`\`\`
+```
 
-## 📚 Documentação da API (Swagger)
-Com a aplicação rodando, acesse o contrato interativo da API (Swagger UI) em:
-👉 **[http://localhost:3000/api-docs](http://localhost:3000/api-docs)**
+A API estará disponível em `http://localhost:3000`.
 
 ---
-## 📄 Documentação do Projeto
-- `docs/ARCHITECTURE.md` — decisões de arquitetura e ADRs
-- `docs/FEATURES.md` — escopo da fatia vertical (o que entra/fica fora)
-- `docs/NESTJS-BEST-PRACTICES.md` — convenções de código
-- `docs/DIVERGENCIAS.md` — divergências entre especificação e implementação
-- `AGENTS.md` — instruções usadas para condução do agente de IA
-- `prompts/` — prompts utilizados, em ordem cronológica
-- `PROGRESSO.md` — log de testes manuais e decisões da sessão
 
-## 🧪 Sobre os Testes (Decisões de Cobertura)
+## 📚 Documentação da API (Swagger)
 
-Para rodar os testes, execute:
-\`\`\`
+Com a aplicação rodando, o contrato interativo completo da API está disponível em:
+
+**http://localhost:3000/api-docs**
+
+---
+
+## 🧪 Testes
+
+Para rodar a suíte de testes:
+```bash
 npm run test
-\`\`\`
+```
 
-**O que escolhi testar, e por quê:**
-Dado o escopo de tempo, a estratégia de testes unitários (`vitest`) ignorou o boilerplate padrão de CRUD e focou estritamente nos cenários que protegem as regras de negócio centrais e mitigam os fatos mapeados do ambiente: 
-1. **Deduplicação por hash:** Garante que o mesmo documento não seja reprocessado, economizando recursos e lidando com a repetição de envios por parte dos clientes.
-2. **Roteamento de confiança:** Valida se a IA (dublê) com pontuação abaixo da linha de corte envia o documento para o status `NEEDS_REVIEW` em vez de publicá-lo diretamente, protegendo a qualidade dos dados extraídos.
-3. **Concorrência e Locks:** Verifica se o `ReviewService` devolve um erro de conflito (`409`) ao tentar realizar o *claim* de um documento já travado por outro operador humano.
-4. **Retry do Worker (BullMQ):** Simula a instabilidade da IA externa, garantindo que exceções acionem o mecanismo de retentativas do worker e, ao esgotar o limite, roteiem o documento de forma segura para o status `FAILED` sem derrubar a aplicação.
+### O que foi escolhido testar, e por quê
+
+Dado o prazo da prova, a estratégia de testes unitários (Vitest — ver nota abaixo) evitou cobertura ampla de CRUD e focou nos quatro cenários que protegem as regras de negócio centrais e mitigam os fatos do ambiente mapeados em `docs/ARCHITECTURE.md`:
+
+| # | Cenário | Fato do ambiente coberto |
+|---|---|---|
+| 1 | **Deduplicação por hash** — o mesmo documento não é reprocessado nem regravado em disco quando reenviado | Fato (c) — reenvio por insegurança/precaução |
+| 2 | **Roteamento de confiança** — score abaixo do limite envia o documento para `NEEDS_REVIEW` em vez de `READY` | Comportamento-alvo #4 do produto |
+| 3 | **Concorrência na fila de revisão** — `ReviewService` retorna `409 Conflict` ao tentar reivindicar um documento já travado por outro revisor | Fato (g) — dois revisores simultâneos |
+| 4 | **Retry do worker** — falhas da IA acionam retentativas do BullMQ e, ao esgotar o limite, o documento é roteado para `FAILED` sem derrubar a aplicação | Fato (a) — instabilidade do provedor de IA |
+
+> **Nota sobre o framework de testes:** o projeto usa Vitest, não Jest como originalmente registrado em `docs/ARCHITECTURE.md`. Essa divergência entre especificação e implementação, junto com a justificativa de mantê-la, está documentada em [`docs/DIVERGENCIAS.md`](docs/DIVERGENCIAS.md).
+
+---
+
+## 📄 Documentação do projeto
+
+| Arquivo | Conteúdo |
+|---|---|
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Especificação, decisões de arquitetura e ADRs |
+| [`docs/FEATURES.md`](docs/FEATURES.md) | Escopo da fatia vertical — o que entra e o que fica de fora, e por quê |
+| [`docs/NESTJS-BEST-PRACTICES.md`](docs/NESTJS-BEST-PRACTICES.md) | Convenções de código adotadas no projeto |
+| [`docs/DIVERGENCIAS.md`](docs/DIVERGENCIAS.md) | Divergências entre especificação e implementação |
+| [`AGENTS.md`](AGENTS.md) | Instruções usadas para condução do agente de IA |
+| [`prompts/`](prompts/) | Prompts utilizados durante o desenvolvimento, em ordem cronológica |
+| [`PROGRESSO.md`](PROGRESSO.md) | Log de testes manuais, bugs encontrados e decisões da sessão |
